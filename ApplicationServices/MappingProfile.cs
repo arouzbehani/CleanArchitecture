@@ -20,6 +20,8 @@ namespace ApplicationServices.Mapping
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
             
             CreateMap<UserCreationDTO, User>();
+            CreateMap<UserDTO,UserUpdateDTO>()
+                            .ForMember(dest=>dest.Id,opt=>opt.Ignore());
 
         }
 

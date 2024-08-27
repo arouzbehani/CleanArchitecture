@@ -10,6 +10,7 @@ using ApplicationServices.Mapping;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Security.Cryptography;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,7 +24,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-var key =Encoding.ASCII.GetBytes( builder.Configuration["Jwt:Secret"]);
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+builder.Services.AddSingleton<TokenService>();
+
+var key =Encoding.ASCII.GetBytes( builder.Configuration["JwtSettings:SecretKey"]);
 
 builder.Services.AddAuthentication(options =>
 {
@@ -36,6 +40,7 @@ builder.Services.AddAuthentication(options =>
     {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateLifetime = true,
         ValidateIssuer = false,
         ValidateAudience = false
     };
@@ -90,11 +95,8 @@ void SeedDatabase(WebApplication app)
     context.Database.EnsureCreated();
 
     // Check if data exists
-    if (context.Users.Any())
+    if (!context.Users.Any())
     {
-        return; // Data already exists
-    }
-
     var users = new List<User>
     {
         new User { Name = "Alice", Email = "alice@example.com" },
@@ -104,6 +106,22 @@ void SeedDatabase(WebApplication app)
 
     context.Users.AddRange(users);
     context.SaveChanges();
+        }
+        if (!context.Secrets.Any()){
+            var secret=new Secret();
+            secret.Domain="Authentication";
+            var key = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(key);
+            }
+            secret.Key = Convert.ToBase64String(key);
+            context.Secrets.Add(secret);
+            context.SaveChanges();
+        }
+        return;
+
+
 }
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {

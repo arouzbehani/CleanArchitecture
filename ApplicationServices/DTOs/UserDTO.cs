@@ -10,6 +10,13 @@ namespace ApplicationServices.DTOs
         public string Email { get; set; }
 
     }
+    public class UserUpdateDTO
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string ProfilePicUrl { get; set; }
+
+    }    
     public class UserCreationDTO
     {
         public string Name { get; set; }
@@ -17,6 +24,7 @@ namespace ApplicationServices.DTOs
         public string Password{get;set;}
 
     }
+
     public class UserLoginDTO
     {
         public string Email { get; set; }

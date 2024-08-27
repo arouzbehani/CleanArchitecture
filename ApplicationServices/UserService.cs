@@ -43,8 +43,16 @@ namespace ApplicationServices.Services
 
         public async Task<UserDTO> UpdateUser(UserDTO userDto)
         {
-            var user = _mapper.Map<User>(userDto);
-            var updatedUser = await _userRepository.UpdateUser(user);
+            var existingUser = await _userRepository.GetUser(userDto.Id);
+            if (existingUser == null)
+            {
+                throw new Exception("User not found");
+            }      
+            var password = existingUser.Password;
+            _mapper.Map(userDto, existingUser);
+            existingUser.Password = password;
+
+            var updatedUser = await _userRepository.UpdateUser(existingUser);
             return _mapper.Map<UserDTO>(updatedUser);
         }
         public async Task<UserDTO> ValidateUser(UserLoginDTO userLoginDto)
