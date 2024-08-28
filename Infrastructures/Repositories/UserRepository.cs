@@ -3,6 +3,7 @@ using DomainCore.Interfaces;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
@@ -22,6 +23,13 @@ namespace Infrastructure.Repositories
             await _context.SaveChangesAsync();
             return user;
 
+        }
+        public async Task<string> GetSecret(){
+            var secret=await _context.Secrets.FirstOrDefaultAsync(x=>x.Domain=="Authentication");
+            if  (secret !=null){
+                return secret.Key;
+            }
+            return null;
         }
 
         public async Task<User> GetUser(int id)
@@ -55,5 +63,7 @@ namespace Infrastructure.Repositories
         {
             return await _context.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == email.ToLower());
         }
+
+
     }
 }

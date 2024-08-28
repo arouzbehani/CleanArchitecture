@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Cryptography;
+using Infrastructure.Security;
+using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,15 +22,57 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-// Add services to the container.
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+
+    // Define the security scheme for JWT
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme.",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});// Add services to the container.
+
+// Register services
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<UserService, UserService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ISecurityService, SecurityService>();
+builder.Services.AddScoped<ISecretRepository, SecretRepository>();
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+// Bind JwtSettings from configuration
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
-builder.Services.AddSingleton<TokenService>();
 
-var key =Encoding.ASCII.GetBytes( builder.Configuration["JwtSettings:SecretKey"]);
+builder.Services.AddSingleton<JwtSettings>();
+builder.Services.AddScoped<TokenService>(provider =>
+{
+    var jwtSettings = provider.GetRequiredService<IOptions<JwtSettings>>().Value;
+    var secretRepository = provider.GetRequiredService<ISecretRepository>();   
+    var secretKey = secretRepository.GetSecret().GetAwaiter().GetResult(); // Ensure this is handled asynchronously properly
+
+    return new TokenService(secretKey, jwtSettings);
+});
 
 builder.Services.AddAuthentication(options =>
 {
@@ -36,6 +81,11 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    var secretRepository = builder.Services.BuildServiceProvider().GetRequiredService<ISecretRepository>();
+    var secretKey = secretRepository.GetSecret().GetAwaiter().GetResult(); // Ensure this is handled asynchronously properly
+    
+    var key = Encoding.ASCII.GetBytes(secretKey);
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
@@ -45,13 +95,11 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = false
     };
 });
-// Register services
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<UserService, UserService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+
 
 // Add AutoMapper
-builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddAutoMapper(typeof(UserMappingProfile));
 
 
 // Configure CORS
@@ -99,9 +147,9 @@ void SeedDatabase(WebApplication app)
     {
     var users = new List<User>
     {
-        new User { Name = "Alice", Email = "alice@example.com" },
-        new User { Name = "Bob", Email = "bob@example.com" },
-        new User { Name = "Charlie", Email = "charlie@example.com" }
+        new User { FirstName = "Alice", LastName="Green", Email = "alice@example.com" },
+        new User { FirstName = "Bob",LastName="Red", Email = "bob@example.com" },
+        new User { FirstName = "Charlie", LastName="Blue",Email = "charlie@example.com" }
     };
 
     context.Users.AddRange(users);

@@ -7,16 +7,18 @@ using System.Text;
 public class TokenService
 {
     private readonly JwtSettings _jwtSettings;
+    private readonly string _secretKey;
 
-    public TokenService(IOptions<JwtSettings> jwtSettings)
+    public TokenService(string secretKey, JwtSettings jwtSettings)
     {
-        _jwtSettings = jwtSettings.Value;
+        _secretKey = secretKey;
+        _jwtSettings = jwtSettings;
     }
 
     public string GenerateToken(string userId,string email)
     {
         
-        var key = Encoding.ASCII.GetBytes(_jwtSettings.SecretKey);
+        var key = Encoding.ASCII.GetBytes(_secretKey);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
@@ -36,7 +38,7 @@ public class TokenService
     public ClaimsPrincipal GetPrincipalFromToken(string token)
 {
     var tokenHandler = new JwtSecurityTokenHandler();
-    var key = Encoding.ASCII.GetBytes(_jwtSettings.SecretKey);
+    var key = Encoding.ASCII.GetBytes(_secretKey);
     var tokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
