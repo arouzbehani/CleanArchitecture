@@ -8,16 +8,16 @@ namespace ApplicationServices.DTOs
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
-        public string ProfilePicUrl { get; set; }
-        public string Phone { get; set; }
+        public string? ProfilePicUrl { get; set; }
+        public string? Phone { get; set; }
 
     }
     public class UserUpdateDTO
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public string ProfilePicUrl { get; set; }
-        public string Phone { get; set; }
+        public string? ProfilePicUrl { get; set; }
+        public string? Phone { get; set; }
 
     }    
     public class UserCreationDTO
@@ -25,7 +25,7 @@ namespace ApplicationServices.DTOs
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
-        public string Phone { get; set; }
+        public string? Phone { get; set; }
         public string Password{get;set;}
     }
 
