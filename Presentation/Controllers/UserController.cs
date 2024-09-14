@@ -100,6 +100,7 @@ namespace Presentation.Controllers
             {
                 return BadRequest(ModelState);
             }
+            
 
             // Extract the token from the Authorization header
             var authHeader = Request.Headers["Authorization"].ToString();
