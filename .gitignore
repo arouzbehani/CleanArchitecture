@@ -76,6 +76,7 @@ artifacts/
 *.pidb
 *.svclog
 *.scc
+*.png
 
 # Chutzpah Test files
 _Chutzpah*
@@ -290,6 +291,5 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 
-profile-pics/Profile pic_5193.jfif
-wwwroot/profile-pics/Profile pic_2553.png
-wwwroot/profile-pics/Profile pic_3592.png
+profile-pics/
+wwwroot/profile-pics/

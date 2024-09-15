@@ -1,10 +1,10 @@
-using ApplicationServices.DTOs;
-using ApplicationServices.Services;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
-using AutoMapper;
-using DomainCore.Entities;
+    using ApplicationServices.DTOs;
+    using ApplicationServices.Services;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.Extensions.Logging;
+    using AutoMapper;
+    using DomainCore.Entities;
 
 namespace Presentation.Controllers
 {

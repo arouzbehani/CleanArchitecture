@@ -65,13 +65,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 
 builder.Services.AddSingleton<JwtSettings>();
-builder.Services.AddScoped<TokenService>(provider =>
+builder.Services.AddScoped<ITokenService>(provider =>
 {
     var jwtSettings = provider.GetRequiredService<IOptions<JwtSettings>>().Value;
     var secretRepository = provider.GetRequiredService<ISecretRepository>();   
-    var secretKey = secretRepository.GetSecret().GetAwaiter().GetResult(); // Ensure this is handled asynchronously properly
+    var secretKey = secretRepository.GetSecret("Authentication").GetAwaiter().GetResult(); // Ensure this is handled asynchronously properly
 
-    return new TokenService(secretKey, jwtSettings);
+    return new TokenService(secretKey, jwtSettings,secretRepository);
 });
 
 builder.Services.AddAuthentication(options =>
@@ -82,7 +82,7 @@ builder.Services.AddAuthentication(options =>
 .AddJwtBearer(options =>
 {
     var secretRepository = builder.Services.BuildServiceProvider().GetRequiredService<ISecretRepository>();
-    var secretKey = secretRepository.GetSecret().GetAwaiter().GetResult(); // Ensure this is handled asynchronously properly
+    var secretKey = secretRepository.GetSecret("Authentication").GetAwaiter().GetResult(); // Ensure this is handled asynchronously properly
     
     var key = Encoding.ASCII.GetBytes(secretKey);
 
@@ -167,6 +167,18 @@ void SeedDatabase(WebApplication app)
             context.Secrets.Add(secret);
             context.SaveChanges();
         }
+        if (!context.Secrets.Where(x=>x.Domain=="Documents").Any()){
+            var secret=new Secret();
+            secret.Domain="Documents";
+            var key = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(key);
+            }
+            secret.Key = Convert.ToBase64String(key);
+            context.Secrets.Add(secret);
+            context.SaveChanges();
+        }        
         return;
 
 

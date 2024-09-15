@@ -10,5 +10,6 @@ namespace Infrastructure.Persistence
 
         public DbSet<User> Users { get; set; }
         public DbSet<Secret> Secrets { get; set; }
+        public DbSet<Document> Documents { get; set; }
     }
 }

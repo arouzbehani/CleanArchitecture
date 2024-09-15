@@ -2,6 +2,6 @@ namespace DomainCore.Interfaces
 {
     public interface ISecretRepository
     {
-        Task<string> GetSecret();
+        Task<string> GetSecret(string domain);
     }
 }

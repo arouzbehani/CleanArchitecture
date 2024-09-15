@@ -13,9 +13,9 @@ namespace Infrastructure.Security
             _context = context;
         }
 
-        public async Task<string> GetSecret()
+        public async Task<string> GetSecret(string domain)
         {
-            var secret = await _context.Secrets.FirstOrDefaultAsync(x => x.Domain == "Authentication");
+            var secret = await _context.Secrets.FirstOrDefaultAsync(x => x.Domain == domain);
             return secret?.Key;
         }
     }

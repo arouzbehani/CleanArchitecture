@@ -11,9 +11,9 @@ namespace ApplicationServices.Services
         private readonly ISecurityService _securityService;
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
-        private readonly TokenService _tokenService;
+        private readonly ITokenService _tokenService;
 
-        public UserService(IUserRepository userRepository, IMapper mapper, ISecurityService securityService, TokenService tokenService)
+        public UserService(IUserRepository userRepository, IMapper mapper, ISecurityService securityService, ITokenService tokenService)
         {
             _userRepository = userRepository;
             _mapper = mapper;
@@ -40,7 +40,7 @@ namespace ApplicationServices.Services
             {
                 return null;
             }
-            var token = _tokenService.GenerateToken(user.Id.ToString(), user.Email);
+            var token = _tokenService.GenerateAuthenticationToken(user.Id.ToString(), user.Email);
 
             return token;
         }
