@@ -60,7 +60,7 @@ namespace Presentation.Controllers
         {
             var authHeader = Request.Headers["Authorization"].ToString();
 
-            var token = RetrieveToken(authHeader);
+            var token = _userService.RetrieveToken(authHeader);
             var userDto = await _userService.GetUser(token);
 
             if (userDto == null)
@@ -81,7 +81,7 @@ namespace Presentation.Controllers
 
             // Extract the token from the Authorization header
             var authHeader = Request.Headers["Authorization"].ToString();
-            var token = RetrieveToken(authHeader);
+            var token = _userService.RetrieveToken(authHeader);
             var user = await _userService.GetUser(token);
 
             if (user == null)
@@ -104,7 +104,7 @@ namespace Presentation.Controllers
 
             // Extract the token from the Authorization header
             var authHeader = Request.Headers["Authorization"].ToString();
-            var token = RetrieveToken(authHeader);
+            var token = _userService.RetrieveToken(authHeader);
             var user = await _userService.GetUser(token);
 
             if (user == null)
@@ -175,7 +175,7 @@ namespace Presentation.Controllers
             // Extract the token from the Authorization header
             var authHeader = Request.Headers["Authorization"].ToString();
 
-            var token = RetrieveToken(authHeader);
+            var token = _userService.RetrieveToken(authHeader);
 
             // Retrieve the user data using the userId
             UserDTO userDto = await _userService.GetUser(token);
@@ -186,16 +186,7 @@ namespace Presentation.Controllers
 
             return Ok(userDto);
         }
-        private string RetrieveToken(string authHeader)
-        {
-            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
-            {
-                return "";
-            }
 
-            var token = authHeader.Substring("Bearer ".Length).Trim();
-            return token;
-        }
 
     }
 }

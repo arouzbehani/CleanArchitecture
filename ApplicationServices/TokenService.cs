@@ -1,3 +1,4 @@
+using DomainCore.Entities;
 using DomainCore.Interfaces;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -43,7 +44,7 @@ namespace ApplicationServices.Services
             return tokenHandler.WriteToken(token);
         }
 
-        public string GenerateDocumentAccessToken(int documentId)
+        public string GenerateDocumentAccessToken(int documentId,int userId)
         {
             string secretKey = _secretRepository.GetSecret("Document").GetAwaiter().GetResult();
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -53,16 +54,17 @@ namespace ApplicationServices.Services
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                new Claim("DocumentId", documentId.ToString())
+                new Claim("documentId", documentId.ToString())
+                ,new Claim("userId", userId.ToString())
             }),
-                Expires = DateTime.UtcNow.AddHours(24), // Token expiration
+                Expires = DateTime.UtcNow.AddHours(8), // Token expiration
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
-        private int GetUserIdByToken(string token)
+        public int GetUserIdByToken(string token)
         {
 
             // Decode the token and get the user claims
@@ -137,6 +139,7 @@ namespace ApplicationServices.Services
                 return null;
             }
         }
+
     }
 
 }

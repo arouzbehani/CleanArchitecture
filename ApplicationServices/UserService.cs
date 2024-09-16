@@ -46,17 +46,25 @@ namespace ApplicationServices.Services
         }
         public async Task<UserDTO> GetUser(string token)
         {
-            var userId=GetUserIdByToken(token);
+            var userId=_tokenService.GetUserIdByToken(token);
             var user = await _userRepository.GetUser(userId);
             if (user == null) return null;
 
             return _mapper.Map<UserDTO>(user);
 
         }
+        public async Task<User> GetUserWithId(string token)
+        {
+            var userId=_tokenService.GetUserIdByToken(token);
+            var user = await _userRepository.GetUser(userId);
+            if (user == null) return null;
 
+            return user;
+
+        }
         public async Task DeleteUser(string token)
         {
-            int id=GetUserIdByToken(token);
+            int id=_tokenService.GetUserIdByToken(token);
             await _userRepository.DeleteUser(id);
         }
         public async Task<IEnumerable<UserDTO>> GetAllUsers()
@@ -68,7 +76,7 @@ namespace ApplicationServices.Services
 
         public async Task<UserDTO> UpdateUser(string token, UserUpdateDTO userUpdateDto)
         {
-            var userId=GetUserIdByToken(token);
+            var userId=_tokenService.GetUserIdByToken(token);
             var existingUser = await _userRepository.GetUser(userId);
             if (existingUser == null)
             {
@@ -84,25 +92,15 @@ namespace ApplicationServices.Services
             return _mapper.Map<UserDTO>(updatedUser);
         }
 
-        private int GetUserIdByToken(string token)
+        public string RetrieveToken(string authHeader)
         {
-
-            // Decode the token and get the user claims
-            var principal = _tokenService.GetPrincipalFromToken(token);
-            if (principal == null)
+            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
             {
-                return 0;
+                return "";
             }
 
-            // Extract the userId claim
-            var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null)
-            {
-                return 0;
-            }
-
-            var userId = int.Parse(userIdClaim.Value);
-            return userId;
+            var token = authHeader.Substring("Bearer ".Length).Trim();
+            return token;
         }
 
 

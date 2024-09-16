@@ -31,13 +31,14 @@ namespace ApplicationServices.Services
             return documentDto;
         }
 
-        public async Task<DocumentDTO> Add(DocumentDTO DocumentDTO)
+        public async Task<Document> Add(DocumentCreateDTO DocumentDTO)
         {
             var document = _mapper.Map<Document>(DocumentDTO);
             // Generate hash for the document content here
-            document.Hash = GenerateHash(DocumentDTO);
             var addedDoc = await _documentRepository.Add(document);
-            return _mapper.Map<DocumentDTO>(addedDoc);
+            document.Url=_tokenService.GenerateDocumentAccessToken(addedDoc.Id,addedDoc.UserId);
+            var updatedDoc=await _documentRepository.Update(addedDoc);
+            return updatedDoc;
         }
 
         public async Task<IEnumerable<DocumentDTO>> GetAll()
@@ -90,6 +91,19 @@ namespace ApplicationServices.Services
                 return hashString;
             }
         }
+
+        Task<string> IDocumentService.HashDocumentContent(Stream documentStream)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GenerateAccessToken(int documentId,int userId)
+        {
+            var token= _tokenService.GenerateDocumentAccessToken(documentId,userId);
+            return token;
+        }
+
+
     }
 
 }

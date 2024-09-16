@@ -13,14 +13,14 @@ namespace Presentation.Controllers
     [Route("api/[controller]")]
     public class DocumentController : ControllerBase
     {
+        private readonly IUserService _userService;
         private readonly IDocumentService _documentService;
-        private readonly ITokenService _tokenService;
         private readonly IMapper _mapper;
 
-        public DocumentController(IDocumentService documentService, ITokenService tokenService, IMapper mapper)
+        public DocumentController(IDocumentService documentService, IUserService userService, IMapper mapper)
         {
             _documentService = documentService;
-            _tokenService = tokenService;
+            _userService = userService;
             _mapper = mapper;
 
         }
@@ -35,10 +35,16 @@ namespace Presentation.Controllers
 
             try
             {
+                var authHeader = Request.Headers["Authorization"].ToString();
+                var token = _userService.RetrieveToken(authHeader);
+                var userDto = await _userService.GetUser(token);
+                if (userDto == null)
+                {
+                    return NotFound("Not Authorized User Access Denied!");
+                }
                 // Hash the document content
                 using var fileReadStream = file.OpenReadStream();
-                string documentHash = _documentService.HashDocumentContent(fileReadStream);
-
+                var hashed=await _documentService.HashDocumentContent(fileReadStream);
 
                 var folderName = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "documents");
                 if (!Directory.Exists(folderName))
@@ -53,19 +59,20 @@ namespace Presentation.Controllers
                     await file.CopyToAsync(fileCreateStream);
                 }
                 // Save document metadata and hash to the database
-                var newDocument = new Document
+                int userId=_userService.GetUserWithId(token).Id;
+                var newDocument = new DocumentCreateDTO
                 {
                     Name = documentDto.Name,
                     Description = documentDto.Description,
                     FileType = file.ContentType,
                     Size = file.Length,
-                    Hash = documentHash,
                     DateUploaded = DateTime.UtcNow,
-                    SavedName = savedName
+                    Hash=hashed,
+                    UserId=userId
                 };
 
-                await _documentService.Add(_mapper.Map<DocumentDTO>(newDocument));
-                return Ok(new { message = "Document added successfully", documentId = newDocument.Id });
+                Document addedDocument=await _documentService.Add(newDocument);
+                return Ok(new { message = "Document added successfully", document=_mapper.Map<DocumentDTO>(addedDocument) });
             }
             catch (Exception ex)
             {
@@ -79,7 +86,13 @@ namespace Presentation.Controllers
             var documentDto = await _documentService.Get(accessToken);
             return Ok(documentDto);
         }
+        [HttpGet("gallery/{accessToken}")]
+        public async Task<IActionResult> GalleryView([FromQuery] string accessToken)
+        {
 
+            var documentDto = await _documentService.Get(accessToken);
+            return Ok(documentDto);
+        }
 
         [HttpDelete("{token}")]
         public async Task<IActionResult> Delete(string token)
@@ -88,7 +101,7 @@ namespace Presentation.Controllers
             return NoContent();
         }
         // Other document-related endpoints
-        [HttpGet("documents/{accessToken}")]
+        [HttpGet("download/{token}")]
         public async Task<IActionResult> DownloadDocument(string token)
         {
             try
