@@ -26,9 +26,9 @@ namespace Infrastructure.Repositories
             return document;
         }
 
-        public async Task<IEnumerable<Document>> GetAll()
+        public async Task<IEnumerable<Document>> GetAll(int userId)
         {
-            return await _context.Documents.ToListAsync();
+            return await _context.Documents.Where(x=>x.UserId==userId).ToListAsync();
         }
 
         public async Task Delete(int id)

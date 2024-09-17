@@ -19,7 +19,7 @@ namespace ApplicationServices.Services
             _mapper = mapper;
             _securityService = securityService;
             _tokenService = tokenService;
-            
+
         }
 
         public async Task<UserDTO> AddUser(UserCreationDTO userDto)
@@ -46,7 +46,7 @@ namespace ApplicationServices.Services
         }
         public async Task<UserDTO> GetUser(string token)
         {
-            var userId=_tokenService.GetUserIdByToken(token);
+            var userId = _tokenService.GetUserIdByToken(token);
             var user = await _userRepository.GetUser(userId);
             if (user == null) return null;
 
@@ -55,7 +55,7 @@ namespace ApplicationServices.Services
         }
         public async Task<User> GetUserWithId(string token)
         {
-            var userId=_tokenService.GetUserIdByToken(token);
+            var userId = _tokenService.GetUserIdByToken(token);
             var user = await _userRepository.GetUser(userId);
             if (user == null) return null;
 
@@ -64,7 +64,7 @@ namespace ApplicationServices.Services
         }
         public async Task DeleteUser(string token)
         {
-            int id=_tokenService.GetUserIdByToken(token);
+            int id = _tokenService.GetUserIdByToken(token);
             await _userRepository.DeleteUser(id);
         }
         public async Task<IEnumerable<UserDTO>> GetAllUsers()
@@ -76,7 +76,7 @@ namespace ApplicationServices.Services
 
         public async Task<UserDTO> UpdateUser(string token, UserUpdateDTO userUpdateDto)
         {
-            var userId=_tokenService.GetUserIdByToken(token);
+            var userId = _tokenService.GetUserIdByToken(token);
             var existingUser = await _userRepository.GetUser(userId);
             if (existingUser == null)
             {
@@ -101,6 +101,17 @@ namespace ApplicationServices.Services
 
             var token = authHeader.Substring("Bearer ".Length).Trim();
             return token;
+        }
+
+        public async Task<bool> UserIsValid(string authHeader)
+        {
+            var token = RetrieveToken(authHeader);
+            var userDto = await GetUser(token);
+            if (userDto == null)
+            {
+                return false;
+            }
+            return true;
         }
 
 

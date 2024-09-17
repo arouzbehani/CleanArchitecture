@@ -21,5 +21,9 @@ namespace ApplicationServices.DTOs
         public int UserId { get; set; }
         public string SavedName { get; set; }   
     }    
-
+    public class DocumentDownloadDTO
+    {
+        public string Hash { get; set; }
+        public string SavedName { get; set; }   
+    }    
 }

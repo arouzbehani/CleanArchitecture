@@ -10,5 +10,6 @@ using DomainCore.Entities;
         Task DeleteUser(string token);  // Updated to return Task
         Task<string> ValidateUser(UserLoginDTO userLoginDTO); // if successful --> returns jwt token
         string RetrieveToken(string authHeader);
+        Task<bool> UserIsValid(string token);
      
     }

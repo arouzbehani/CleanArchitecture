@@ -26,24 +26,35 @@ namespace ApplicationServices.Services
                 throw new UnauthorizedAccessException("Invalid access token.");
 
             var document = await _documentRepository.Get(documentId);
-            var documentDto=_mapper.Map<DocumentDTO>(document);
-            documentDto.Url=token;
+            var documentDto = _mapper.Map<DocumentDTO>(document);
+            documentDto.Url = token;
             return documentDto;
         }
+        public async Task<DocumentDownloadDTO> GetSavedName(string token)
+        {
+            // Validate the access token and retrieve document ID from it
+            int documentId = _tokenService.ValidateDocumentAccessToken(token).Value;
 
+            if (documentId == null)
+                throw new UnauthorizedAccessException("Invalid access token.");
+
+            var document = await _documentRepository.Get(documentId);
+            var documentDto = _mapper.Map<DocumentDownloadDTO>(document);
+            return documentDto;
+        }
         public async Task<Document> Add(DocumentCreateDTO DocumentDTO)
         {
             var document = _mapper.Map<Document>(DocumentDTO);
             // Generate hash for the document content here
             var addedDoc = await _documentRepository.Add(document);
-            document.Url=_tokenService.GenerateDocumentAccessToken(addedDoc.Id,addedDoc.UserId);
-            var updatedDoc=await _documentRepository.Update(addedDoc);
+            document.Url = _tokenService.GenerateDocumentAccessToken(addedDoc.Id, addedDoc.UserId);
+            var updatedDoc = await _documentRepository.Update(addedDoc);
             return updatedDoc;
         }
 
-        public async Task<IEnumerable<DocumentDTO>> GetAll()
+        public async Task<IEnumerable<DocumentDTO>> GetAll(int userId)
         {
-            var documents = await _documentRepository.GetAll();
+            var documents = await _documentRepository.GetAll(userId);
             return _mapper.Map<IEnumerable<DocumentDTO>>(documents);
         }
 
@@ -52,25 +63,21 @@ namespace ApplicationServices.Services
             await _documentRepository.Delete(id);
         }
 
-
-        private string GenerateHash(DocumentDTO DocumentDTO)
-        {
-            // Your hash generation logic (e.g., SHA256) for document content
-            return "someHashValue";
-        }
-
         public Task<DocumentDTO> Update(string token, DocumentDTO doc_dto)
         {
             throw new NotImplementedException();
         }
 
-        public Task Delete(string token)
+        public async Task Delete(string token)
         {
-            throw new NotImplementedException();
+            int documentId = _tokenService.ValidateDocumentAccessToken(token).Value;
+            await _documentRepository.Delete(documentId);
+
         }
 
-        public Task<string> ValidateHash(DocumentDTO doc_dto, string hash)
+        public Task<string> ValidateHash(DocumentDownloadDTO doc_dto)
         {
+
             throw new NotImplementedException();
         }
 
@@ -97,13 +104,21 @@ namespace ApplicationServices.Services
             throw new NotImplementedException();
         }
 
-        public string GenerateAccessToken(int documentId,int userId)
+        public string GenerateAccessToken(int documentId, int userId)
         {
-            var token= _tokenService.GenerateDocumentAccessToken(documentId,userId);
+            var token = _tokenService.GenerateDocumentAccessToken(documentId, userId);
             return token;
         }
 
-
+        public async Task<bool> ValidateHash(Stream stream, string hash)
+        {
+            string fileHash =HashDocumentContent(stream);
+            if (fileHash == hash)
+            {
+                return true;
+            }
+            return false;
+        }
     }
 
 }
