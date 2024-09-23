@@ -3,7 +3,7 @@ namespace ApplicationServices.DTOs
 
     public class DocumentDTO
     {
-        public string Name { get; set; }
+        public string DocumentName { get; set; }
         public string? Description { get; set; }
         public string FileType { get; set; }
         public long Size { get; set; }
@@ -12,7 +12,7 @@ namespace ApplicationServices.DTOs
     }
     public class DocumentCreateDTO
     {
-        public string Name { get; set; }
+        public string DocumentName { get; set; }
         public string? Description { get; set; }
         public string FileType { get; set; }
         public long Size { get; set; }

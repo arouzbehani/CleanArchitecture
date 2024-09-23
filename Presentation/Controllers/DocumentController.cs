@@ -62,7 +62,7 @@ namespace Presentation.Controllers
                 int userId = _userService.GetUserWithId(token).Id;
                 var newDocument = new DocumentCreateDTO
                 {
-                    Name = documentDto.Name,
+                    DocumentName = documentDto.DocumentName,
                     Description = documentDto.Description,
                     FileType = file.ContentType,
                     Size = file.Length,
@@ -91,9 +91,10 @@ namespace Presentation.Controllers
             var documentDto = await _documentService.Get(token);
             return Ok(documentDto);
         }
+        
         [HttpGet("gallery")]
         [Authorize]
-        public async Task<IActionResult> GalleryView()
+        public async Task<ActionResult<IEnumerable<DocumentDTO>>> GalleryView()
         {
             var authHeader = Request.Headers["Authorization"].ToString();
             var accessToken = _userService.RetrieveToken(authHeader);
@@ -102,7 +103,7 @@ namespace Presentation.Controllers
             {
                 return NotFound("No Authorized User Found!");
             }
-            var documents = _documentService.GetAll(userDto.Id);
+            Task<IEnumerable<DocumentDTO>> documents = _documentService.GetAll(userDto.Id);
 
             return Ok(documents);
         }

@@ -54,8 +54,10 @@ builder.Services.AddSwaggerGen(c =>
 
 // Register services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<UserService, UserService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IDocumentService, DocumentService>();
+builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 builder.Services.AddScoped<ISecurityService, SecurityService>();
 builder.Services.AddScoped<ISecretRepository, SecretRepository>();
 
@@ -100,6 +102,7 @@ builder.Services.AddAuthentication(options =>
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(UserMappingProfile));
+builder.Services.AddAutoMapper(typeof(DocumentMappingProfile));
 
 
 // Configure CORS
@@ -127,13 +130,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowReactApp");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 app.UseStaticFiles();
-app.UseCors("AllowReactApp");
 
 app.Run();
 void SeedDatabase(WebApplication app)
