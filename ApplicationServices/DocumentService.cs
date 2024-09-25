@@ -55,7 +55,14 @@ namespace ApplicationServices.Services
         public async Task<IEnumerable<DocumentDTO>> GetAll(int userId)
         {
             var documents = await _documentRepository.GetAll(userId);
+            if (documents == null || !documents.Any())
+            {
+                // Log the situation, return an empty list, or throw an appropriate exception
+                return new List<DocumentDTO>();
+            }
+
             return _mapper.Map<IEnumerable<DocumentDTO>>(documents);
+
         }
 
         public async Task Delete(int id)
@@ -112,7 +119,7 @@ namespace ApplicationServices.Services
 
         public async Task<bool> ValidateHash(Stream stream, string hash)
         {
-            string fileHash =HashDocumentContent(stream);
+            string fileHash = HashDocumentContent(stream);
             if (fileHash == hash)
             {
                 return true;
@@ -120,7 +127,7 @@ namespace ApplicationServices.Services
             return false;
         }
 
-    
+
     }
 
 }

@@ -79,6 +79,7 @@ namespace Presentation.Controllers
                 return StatusCode(500, "Error while uploading document: " + ex.Message);
             }
         }
+        
         [HttpGet("view")]
         [Authorize]
         public async Task<IActionResult> View([FromQuery] string token)
@@ -103,7 +104,7 @@ namespace Presentation.Controllers
             {
                 return NotFound("No Authorized User Found!");
             }
-            Task<IEnumerable<DocumentDTO>> documents = _documentService.GetAll(userDto.Id);
+            var documents =await _documentService.GetAll(userDto.Id);
 
             return Ok(documents);
         }
